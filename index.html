@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SalesOps Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:#f5f4f0;color:#1a1a1a;padding:1rem;font-size:14px}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:10px}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.logo{width:30px;height:30px;border-radius:7px;background:#185FA5;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600;flex-shrink:0}
+.topbar h1{font-size:16px;font-weight:500}
+.conn{display:flex;align-items:center;gap:5px;font-size:12px;color:#888}
+.dot{width:7px;height:7px;border-radius:50%;background:#639922;flex-shrink:0}
+.dot.err{background:#E24B4A}
+.btn{font-size:13px;padding:6px 14px;border:0.5px solid rgba(0,0,0,.25);border-radius:8px;background:#fff;color:#1a1a1a;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+.btn:hover{background:#f0efe8}
+.btn-primary{background:#185FA5;border-color:#185FA5;color:#fff}
+.btn-primary:hover{background:#0C447C}
+.btn-sm{font-size:12px;padding:4px 10px}
+.tabs{display:flex;gap:2px;border-bottom:0.5px solid rgba(0,0,0,.15);margin-bottom:1.5rem}
+.tab{font-size:13px;padding:7px 16px;cursor:pointer;border-bottom:2px solid transparent;color:#888;transition:color .15s;user-select:none}
+.tab.active{border-bottom-color:#185FA5;color:#1a1a1a;font-weight:500}
+.tab:hover:not(.active){color:#1a1a1a}
+.metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:1.5rem}
+.metric{background:#f0efe8;border-radius:8px;padding:1rem}
+.metric-label{font-size:11px;color:#888;margin-bottom:5px;text-transform:uppercase;letter-spacing:.03em}
+.metric-value{font-size:24px;font-weight:500;line-height:1.1}
+.metric-sub{font-size:11px;margin-top:5px;color:#888}
+.up{color:#3B6D11}
+.charts-row{display:grid;grid-template-columns:3fr 2fr;gap:1rem;margin-bottom:1rem}
+.card{background:#fff;border:0.5px solid rgba(0,0,0,.12);border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.card-title{font-size:14px;font-weight:500}
+.card-sub{font-size:12px;color:#888}
+.pipe-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:12px}
+.pipe-label{width:90px;color:#888;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pipe-bg{flex:1;height:6px;background:#f0efe8;border-radius:3px;overflow:hidden}
+.pipe-fill{height:6px;border-radius:3px;transition:width .5s ease}
+.pipe-n{width:20px;text-align:right;color:#888}
+.pipe-v{width:52px;text-align:right;font-weight:500}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;color:#888;font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.03em;padding:8px 10px;border-bottom:0.5px solid rgba(0,0,0,.12)}
+td{padding:9px 10px;border-bottom:0.5px solid rgba(0,0,0,.08);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#f5f4f0}
+.badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:4px;font-weight:500;white-space:nowrap}
+.b-won{background:#EAF3DE;color:#27500A}
+.b-lost{background:#FCEBEB;color:#791F1F}
+.b-active{background:#E6F1FB;color:#0C447C}
+.b-new{background:#FAEEDA;color:#633806}
+.b-neg{background:#EEEDFE;color:#3C3489}
+.av{width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0;vertical-align:middle}
+.av0{background:#B5D4F4;color:#0C447C}.av1{background:#9FE1CB;color:#085041}
+.av2{background:#CECBF6;color:#3C3489}.av3{background:#FAC775;color:#633806}.av4{background:#F5C4B3;color:#712B13}
+.form-row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;background:#fff;padding:1rem 1.25rem;border:0.5px solid rgba(0,0,0,.12);border-radius:12px;margin-bottom:1rem}
+.field{display:flex;flex-direction:column;gap:3px}
+.field label{font-size:11px;color:#888}
+.field input,.field select{font-size:13px;padding:6px 10px;border:0.5px solid rgba(0,0,0,.25);border-radius:8px;background:#f0efe8;color:#1a1a1a}
+.field input:focus,.field select:focus{outline:none;border-color:#185FA5}
+.banner{border-radius:8px;padding:9px 14px;font-size:13px;margin-bottom:1rem}
+.b-err{background:#FCEBEB;color:#791F1F;border:0.5px solid #F09595}
+.b-ok{background:#EAF3DE;color:#27500A;border:0.5px solid #97C459}
+.prog-bg{height:5px;background:#f0efe8;border-radius:3px;margin-top:5px;overflow:hidden}
+.prog-fill{height:5px;border-radius:3px;background:#185FA5}
+.spin{display:inline-block;width:18px;height:18px;border:2px solid rgba(0,0,0,.15);border-top-color:#185FA5;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading{display:flex;align-items:center;justify-content:center;gap:10px;padding:3rem;color:#888;font-size:13px}
+select.stage-select{font-size:12px;padding:3px 7px;border:0.5px solid rgba(0,0,0,.2);border-radius:4px;background:#f0efe8;color:#1a1a1a;cursor:pointer}
+.empty{text-align:center;padding:2.5rem;color:#888;font-size:13px}
+@media(max-width:600px){.charts-row{grid-template-columns:1fr}.metrics-grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const SB_URL="https://zofkyhbnxglhnwrgmpqj.supabase.co";
+const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpvZmt5aGJueGdsaG53cmdtcHFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5OTE0OTksImV4cCI6MjA5NTU2NzQ5OX0.8-LFv24_yqIR0ZQKMu8hQD5zMNwmLfKwEGjeGcnDW28";
+const STAGES=['Prospecting','Qualification','Proposal','Negotiation','Closed Won','Closed Lost'];
+const SC={'Prospecting':'#378ADD','Qualification':'#EF9F27','Proposal':'#7F77DD','Negotiation':'#D85A30','Closed Won':'#639922','Closed Lost':'#E24B4A'};
+const BC={'Closed Won':'b-won','Closed Lost':'b-lost','Prospecting':'b-new','Qualification':'b-active','Proposal':'b-active','Negotiation':'b-neg'};
+const AVC=['av0','av1','av2','av3','av4'];
+const avc=n=>AVC[((n||'A').charCodeAt(0))%5];
+const avi=n=>(n||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+const fmt=v=>v>=1e6?'$'+(v/1e6).toFixed(1)+'M':v>=1e3?'$'+Math.round(v/1e3)+'K':'$'+Math.round(v||0);
+const fmtDate=s=>s?new Date(s).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit'}):'—';
+let S={tab:'overview',deals:[],reps:[],activities:[],msg:null,loading:true,connected:false};
+let ND={name:'',company:'',value:'',stage:'Prospecting',rep_name:''};
+let chartInst=null;
+async function sb(path,opts={}){
+  const r=await fetch(`${SB_URL}/rest/v1/${path}`,{
+    headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json','Prefer':'return=representation',...(opts.headers||{})},
+    ...opts
+  });
+  if(!r.ok){const t=await r.text();throw new Error(JSON.parse(t)?.message||t||r.statusText)}
+  if(r.status===204)return null;
+  return r.json();
+}
+async function loadAll(){
+  const[d,r,a]=await Promise.all([
+    sb('deals?select=*&order=created_at.desc'),
+    sb('reps?select=*&order=name.asc'),
+    sb('activities?select=*&order=created_at.desc&limit=60'),
+  ]);
+  S.deals=d||[];S.reps=r||[];S.activities=a||[];
+}
+async function boot(){
+  S.loading=true;render();
+  try{await loadAll();S.connected=true;S.loading=false;render();}
+  catch(e){S.loading=false;S.connected=false;S.msg={type:'err',text:'Could not load data: '+e.message};render();}
+}
+async function addDeal(){
+  if(!ND.name||!ND.value){S.msg={type:'err',text:'Deal name and value are required.'};render();return;}
+  try{
+    const d=await sb('deals',{method:'POST',body:JSON.stringify({name:ND.name,company:ND.company,stage:ND.stage,value:parseFloat(ND.value),rep_name:ND.rep_name,close_date:new Date(Date.now()+30*864e5).toISOString().split('T')[0],created_at:new Date().toISOString()})});
+    S.deals=[d[0],...S.deals];
+    try{await sb('activities',{method:'POST',body:JSON.stringify({deal_id:d[0].id,type:'Deal Created',note:`${ND.name} added to ${ND.stage}`,created_at:new Date().toISOString()})});}catch(e){}
+    S.activities=[{type:'Deal Created',note:`${ND.name} added to ${ND.stage}`,created_at:new Date().toISOString()},...S.activities];
+    ND={name:'',company:'',value:'',stage:'Prospecting',rep_name:''};
+    S.msg={type:'ok',text:`"${d[0].name}" saved to Supabase ✓`};render();
+  }catch(e){S.msg={type:'err',text:e.message};render();}
+}
+async function patchStage(id,stage){
+  try{
+    await sb(`deals?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({stage})});
+    S.deals=S.deals.map(d=>d.id===id?{...d,stage}:d);
+    try{await sb('activities',{method:'POST',body:JSON.stringify({deal_id:id,type:'Stage Change',note:`Stage → ${stage}`,created_at:new Date().toISOString()})});}catch(e){}
+    S.activities=[{type:'Stage Change',note:`Stage → ${stage}`,created_at:new Date().toISOString()},...S.activities];
+    S.msg={type:'ok',text:`Stage updated to "${stage}" ✓`};render();
+  }catch(e){S.msg={type:'err',text:e.message};render();}
+}
+async function deleteDeal(id,name){
+  if(!confirm(`Delete "${name}"?`))return;
+  try{
+    await sb(`deals?id=eq.${id}`,{method:'DELETE',headers:{'Prefer':''}});
+    S.deals=S.deals.filter(d=>d.id!==id);
+    S.msg={type:'ok',text:`"${name}" deleted.`};render();
+  }catch(e){S.msg={type:'err',text:e.message};render();}
+}
+async function refresh(){S.msg=null;try{await loadAll();S.msg={type:'ok',text:'Refreshed ✓'};}catch(e){S.msg={type:'err',text:e.message};}render();}
+function mets(){
+  const won=S.deals.filter(d=>d.stage==='Closed Won');
+  const active=S.deals.filter(d=>!['Closed Won','Closed Lost'].includes(d.stage));
+  const closed=S.deals.filter(d=>['Closed Won','Closed Lost'].includes(d.stage));
+  const rev=won.reduce((s,d)=>s+(d.value||0),0);
+  const pipe=active.reduce((s,d)=>s+(d.value||0),0);
+  const wr=closed.length?Math.round(won.length/closed.length*100):0;
+  const avg=won.length?Math.round(rev/won.length):0;
+  return{rev,pipe,wr,avg,wonN:won.length,activeN:active.length,total:S.deals.length};
+}
+function pipeStages(){
+  const m={};STAGES.forEach(s=>{m[s]={count:0,value:0}});
+  S.deals.forEach(d=>{if(m[d.stage]){m[d.stage].count++;m[d.stage].value+=(d.value||0)}});
+  return m;
+}
+function repPerf(){
+  const m={};
+  S.deals.forEach(d=>{
+    if(!d.rep_name)return;
+    if(!m[d.rep_name])m[d.rep_name]={won:0,total:0,rev:0};
+    m[d.rep_name].total++;
+    if(d.stage==='Closed Won'){m[d.rep_name].won++;m[d.rep_name].rev+=(d.value||0)}
+  });
+  return Object.entries(m).sort((a,b)=>b[1].rev-a[1].rev);
+}
+function render(){
+  const app=document.getElementById('app');
+  if(S.loading){app.innerHTML=`<div class="loading"><div class="spin"></div> Connecting to Supabase…</div>`;return;}
+  const m=mets(),stages=pipeStages(),perf=repPerf();
+  app.innerHTML=`
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="logo">SO</div>
+        <h1>SalesOps</h1>
+        <div class="conn"><span class="dot ${S.connected?'':'err'}"></span>Live · ${S.deals.length} deals</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-sm" onclick="refresh()">↻ Refresh</button>
+      </div>
+    </div>
+    ${S.msg?`<div class="banner ${S.msg.type==='err'?'b-err':'b-ok'}">${S.msg.text}</div>`:''}
+    <div class="tabs">
+      ${['overview','deals','team','activity'].map(t=>`<div class="tab${S.tab===t?' active':''}" onclick="setTab('${t}')">${t[0].toUpperCase()+t.slice(1)}</div>`).join('')}
+    </div>
+    ${S.tab==='overview'?renderOverview(m,stages,perf):''}
+    ${S.tab==='deals'?renderDeals():''}
+    ${S.tab==='team'?renderTeam(perf):''}
+    ${S.tab==='activity'?renderActivity():''}
+  `;
+  if(S.tab==='overview')setTimeout(()=>drawChart(stages),60);
+}
+function renderOverview(m,stages,perf){
+  return`
+    <div class="metrics-grid">
+      <div class="metric"><div class="metric-label">Revenue closed</div><div class="metric-value">${fmt(m.rev)}</div><div class="metric-sub up">↑ ${m.wonN} deals won</div></div>
+      <div class="metric"><div class="metric-label">Pipeline value</div><div class="metric-value">${fmt(m.pipe)}</div><div class="metric-sub">${m.activeN} active</div></div>
+      <div class="metric"><div class="metric-label">Win rate</div><div class="metric-value">${m.wr}%</div><div class="metric-sub">${m.total} total deals</div></div>
+      <div class="metric"><div class="metric-label">Avg deal size</div><div class="metric-value">${fmt(m.avg)}</div><div class="metric-sub">${m.wonN} closed won</div></div>
+    </div>
+    <div class="charts-row">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Pipeline by stage</span></div>
+        ${STAGES.map(s=>{const st=stages[s];const max=Math.max(...Object.values(stages).map(x=>x.value),1);return`<div class="pipe-row"><span class="pipe-label">${s}</span><div class="pipe-bg"><div class="pipe-fill" style="width:${Math.round(st.value/max*100)}%;background:${SC[s]}"></div></div><span class="pipe-n">${st.count}</span><span class="pipe-v">${fmt(st.value)}</span></div>`;}).join('')}
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Stage breakdown</span></div>
+        <div style="position:relative;width:100%;height:190px"><canvas id="stageChart"></canvas></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Recent deals</span><span class="card-sub">${S.deals.length} total</span></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Deal</th><th>Stage</th><th>Value</th><th>Rep</th><th>Close</th></tr></thead>
+        <tbody>${S.deals.slice(0,6).map(d=>`<tr><td style="font-weight:500">${d.name}${d.company?`<br><span style="font-size:11px;color:#888;font-weight:400">${d.company}</span>`:''}</td><td><span class="badge ${BC[d.stage]||'b-active'}">${d.stage}</span></td><td>${fmt(d.value||0)}</td><td><span class="av ${avc(d.rep_name||'A')}" style="margin-right:6px">${avi(d.rep_name||'?')}</span>${d.rep_name||'—'}</td><td style="color:#888;font-size:12px">${fmtDate(d.close_date)}</td></tr>`).join('')}</tbody>
+      </table></div>
+    </div>`;
+}
+function renderDeals(){
+  return`
+    <div class="form-row">
+      <div class="field"><label>Deal name *</label><input type="text" placeholder="e.g. Acme Q3 Expansion" value="${ND.name}" oninput="ND.name=this.value" style="min-width:160px"></div>
+      <div class="field"><label>Company</label><input type="text" placeholder="Company" value="${ND.company}" oninput="ND.company=this.value" style="min-width:110px"></div>
+      <div class="field"><label>Value ($) *</label><input type="number" placeholder="50000" value="${ND.value}" oninput="ND.value=this.value" style="width:90px"></div>
+      <div class="field"><label>Stage</label><select onchange="ND.stage=this.value">${STAGES.map(s=>`<option value="${s}"${ND.stage===s?' selected':''}>${s}</option>`).join('')}</select></div>
+      <div class="field"><label>Rep</label><input type="text" placeholder="Rep name" value="${ND.rep_name}" oninput="ND.rep_name=this.value" list="rl" style="min-width:110px"><datalist id="rl">${S.reps.map(r=>`<option value="${r.name}">`).join('')}</datalist></div>
+      <div class="field"><label>&nbsp;</label><button class="btn btn-primary" onclick="addDeal()">+ Add deal</button></div>
+    </div>
+    <div class="card">
+      ${!S.deals.length?`<div class="empty">No deals yet.</div>`:`
+      <div class="table-wrap"><table>
+        <thead><tr><th>Deal</th><th>Company</th><th>Value</th><th>Stage</th><th>Rep</th><th>Close</th><th></th></tr></thead>
+        <tbody>${S.deals.map(d=>`<tr><td style="font-weight:500">${d.name}</td><td style="color:#888">${d.company||'—'}</td><td>${fmt(d.value||0)}</td><td><select class="stage-select" onchange="patchStage('${d.id}',this.value)">${STAGES.map(s=>`<option value="${s}"${d.stage===s?' selected':''}>${s}</option>`).join('')}</select></td><td><span class="av ${avc(d.rep_name||'A')}" style="margin-right:6px">${avi(d.rep_name||'?')}</span>${d.rep_name||'Unassigned'}</td><td style="color:#888;font-size:12px">${fmtDate(d.close_date)}</td><td><button class="btn btn-sm" onclick="deleteDeal('${d.id}','${d.name.replace(/'/g,"\\'")}')" style="color:#A32D2D;border-color:rgba(163,45,45,.25);padding:3px 8px">✕</button></td></tr>`).join('')}</tbody>
+      </table></div>`}
+    </div>`;
+}
+function renderTeam(perf){
+  return`<div class="card">
+    ${!perf.length?`<div class="empty">No rep data yet.</div>`:`
+    <div class="table-wrap"><table>
+      <thead><tr><th>Rep</th><th>Region</th><th>Won</th><th>Revenue</th><th>Win rate</th><th>Quota progress</th></tr></thead>
+      <tbody>${perf.map(([name,p])=>{
+        const rep=S.reps.find(r=>r.name===name);const quota=rep?.quota||120000;
+        const pct=Math.min(Math.round(p.rev/quota*100),100);const wr=p.total?Math.round(p.won/p.total*100):0;
+        return`<tr><td><span class="av ${avc(name)}" style="margin-right:8px">${avi(name)}</span><span style="font-weight:500">${name}</span></td><td style="color:#888">${rep?.region||'—'}</td><td>${p.won}</td><td>${fmt(p.rev)}</td><td><span class="${wr>=50?'up':''}">${wr}%</span></td><td style="min-width:130px"><div style="display:flex;justify-content:space-between;font-size:11px;color:#888;margin-bottom:3px"><span>${fmt(p.rev)}</span><span>${pct}% of ${fmt(quota)}</span></div><div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${pct>=100?'#639922':'#185FA5'}"></div></div></td></tr>`;
+      }).join('')}</tbody>
+    </table></div>`}
+  </div>`;
+}
+function renderActivity(){
+  return`<div class="card">
+    <div class="card-header"><span class="card-title">Activity log</span><span class="card-sub">${S.activities.length} events</span></div>
+    ${!S.activities.length?`<div class="empty">No activity yet.</div>`:`
+    <div class="table-wrap"><table>
+      <thead><tr><th>Date</th><th>Type</th><th>Note</th></tr></thead>
+      <tbody>${S.activities.slice(0,40).map(a=>`<tr><td style="color:#888;white-space:nowrap;font-size:12px">${fmtDate(a.created_at)}</td><td><span class="badge b-active">${a.type}</span></td><td>${a.note}</td></tr>`).join('')}</tbody>
+    </table></div>`}
+  </div>`;
+}
+function drawChart(stages){
+  const c=document.getElementById('stageChart');if(!c)return;
+  if(chartInst){chartInst.destroy();chartInst=null;}
+  const labels=STAGES.filter(s=>stages[s].count>0);
+  chartInst=new Chart(c,{type:'doughnut',data:{labels,datasets:[{data:labels.map(s=>stages[s].count),backgroundColor:labels.map(s=>SC[s]),borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:10,padding:10}}}}});
+}
+function setTab(t){S.tab=t;S.msg=null;render();}
+boot();
+</script>
+</body>
+</html>
