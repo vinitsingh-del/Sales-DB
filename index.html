@@ -5,267 +5,527 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SalesOps Dashboard</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:system-ui,-apple-system,sans-serif;background:#f5f4f0;color:#1a1a1a;padding:1rem;font-size:14px}
-.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:10px}
-.topbar-left{display:flex;align-items:center;gap:10px}
-.logo{width:30px;height:30px;border-radius:7px;background:#185FA5;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600;flex-shrink:0}
-.topbar h1{font-size:16px;font-weight:500}
-.conn{display:flex;align-items:center;gap:5px;font-size:12px;color:#888}
-.dot{width:7px;height:7px;border-radius:50%;background:#639922;flex-shrink:0}
-.dot.err{background:#E24B4A}
-.btn{font-size:13px;padding:6px 14px;border:0.5px solid rgba(0,0,0,.25);border-radius:8px;background:#fff;color:#1a1a1a;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
-.btn:hover{background:#f0efe8}
-.btn-primary{background:#185FA5;border-color:#185FA5;color:#fff}
-.btn-primary:hover{background:#0C447C}
-.btn-sm{font-size:12px;padding:4px 10px}
-.tabs{display:flex;gap:2px;border-bottom:0.5px solid rgba(0,0,0,.15);margin-bottom:1.5rem}
-.tab{font-size:13px;padding:7px 16px;cursor:pointer;border-bottom:2px solid transparent;color:#888;transition:color .15s;user-select:none}
-.tab.active{border-bottom-color:#185FA5;color:#1a1a1a;font-weight:500}
-.tab:hover:not(.active){color:#1a1a1a}
-.metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:1.5rem}
-.metric{background:#f0efe8;border-radius:8px;padding:1rem}
-.metric-label{font-size:11px;color:#888;margin-bottom:5px;text-transform:uppercase;letter-spacing:.03em}
-.metric-value{font-size:24px;font-weight:500;line-height:1.1}
-.metric-sub{font-size:11px;margin-top:5px;color:#888}
-.up{color:#3B6D11}
-.charts-row{display:grid;grid-template-columns:3fr 2fr;gap:1rem;margin-bottom:1rem}
-.card{background:#fff;border:0.5px solid rgba(0,0,0,.12);border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem}
-.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
-.card-title{font-size:14px;font-weight:500}
-.card-sub{font-size:12px;color:#888}
-.pipe-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:12px}
-.pipe-label{width:90px;color:#888;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pipe-bg{flex:1;height:6px;background:#f0efe8;border-radius:3px;overflow:hidden}
-.pipe-fill{height:6px;border-radius:3px;transition:width .5s ease}
-.pipe-n{width:20px;text-align:right;color:#888}
-.pipe-v{width:52px;text-align:right;font-weight:500}
-.table-wrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:13px}
-th{text-align:left;color:#888;font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.03em;padding:8px 10px;border-bottom:0.5px solid rgba(0,0,0,.12)}
-td{padding:9px 10px;border-bottom:0.5px solid rgba(0,0,0,.08);vertical-align:middle}
-tr:last-child td{border-bottom:none}
-tr:hover td{background:#f5f4f0}
-.badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:4px;font-weight:500;white-space:nowrap}
-.b-won{background:#EAF3DE;color:#27500A}
-.b-lost{background:#FCEBEB;color:#791F1F}
-.b-active{background:#E6F1FB;color:#0C447C}
-.b-new{background:#FAEEDA;color:#633806}
-.b-neg{background:#EEEDFE;color:#3C3489}
-.av{width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0;vertical-align:middle}
-.av0{background:#B5D4F4;color:#0C447C}.av1{background:#9FE1CB;color:#085041}
-.av2{background:#CECBF6;color:#3C3489}.av3{background:#FAC775;color:#633806}.av4{background:#F5C4B3;color:#712B13}
-.form-row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;background:#fff;padding:1rem 1.25rem;border:0.5px solid rgba(0,0,0,.12);border-radius:12px;margin-bottom:1rem}
-.field{display:flex;flex-direction:column;gap:3px}
-.field label{font-size:11px;color:#888}
-.field input,.field select{font-size:13px;padding:6px 10px;border:0.5px solid rgba(0,0,0,.25);border-radius:8px;background:#f0efe8;color:#1a1a1a}
-.field input:focus,.field select:focus{outline:none;border-color:#185FA5}
-.banner{border-radius:8px;padding:9px 14px;font-size:13px;margin-bottom:1rem}
-.b-err{background:#FCEBEB;color:#791F1F;border:0.5px solid #F09595}
-.b-ok{background:#EAF3DE;color:#27500A;border:0.5px solid #97C459}
-.prog-bg{height:5px;background:#f0efe8;border-radius:3px;margin-top:5px;overflow:hidden}
-.prog-fill{height:5px;border-radius:3px;background:#185FA5}
-.spin{display:inline-block;width:18px;height:18px;border:2px solid rgba(0,0,0,.15);border-top-color:#185FA5;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
-@keyframes spin{to{transform:rotate(360deg)}}
-.loading{display:flex;align-items:center;justify-content:center;gap:10px;padding:3rem;color:#888;font-size:13px}
-select.stage-select{font-size:12px;padding:3px 7px;border:0.5px solid rgba(0,0,0,.2);border-radius:4px;background:#f0efe8;color:#1a1a1a;cursor:pointer}
-.empty{text-align:center;padding:2.5rem;color:#888;font-size:13px}
-@media(max-width:600px){.charts-row{grid-template-columns:1fr}.metrics-grid{grid-template-columns:repeat(2,1fr)}}
+:root {
+  --bg: #f7f6f2;
+  --bg-card: #ffffff;
+  --bg-surface: #f0efe9;
+  --text: #1a1a18;
+  --text-muted: #888880;
+  --text-faint: #b4b2a9;
+  --border: rgba(0,0,0,0.1);
+  --border-strong: rgba(0,0,0,0.2);
+  --blue: #185FA5;
+  --blue-light: #E6F1FB;
+  --blue-text: #0C447C;
+  --green: #3B6D11;
+  --green-light: #EAF3DE;
+  --green-text: #27500A;
+  --red: #A32D2D;
+  --red-light: #FCEBEB;
+  --red-text: #791F1F;
+  --amber-light: #FAEEDA;
+  --amber-text: #633806;
+  --purple-light: #EEEDFE;
+  --purple-text: #3C3489;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1a1a18;
+    --bg-card: #232320;
+    --bg-surface: #2c2c29;
+    --text: #f0efe9;
+    --text-muted: #888880;
+    --text-faint: #555550;
+    --border: rgba(255,255,255,0.08);
+    --border-strong: rgba(255,255,255,0.15);
+    --blue-light: #0c2a45;
+    --blue-text: #85B7EB;
+    --green-light: #1a2e0a;
+    --green-text: #97C459;
+    --red-light: #2e0f0f;
+    --red-text: #F09595;
+    --amber-light: #2e1f05;
+    --amber-text: #FAC775;
+    --purple-light: #1e1c3a;
+    --purple-text: #AFA9EC;
+  }
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+a { color: inherit; text-decoration: none; }
+
+/* Layout */
+.shell { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+.sidebar { background: var(--bg-card); border-right: 0.5px solid var(--border); padding: 1.5rem 1rem; display: flex; flex-direction: column; gap: 2rem; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+.main { padding: 1.5rem 2rem; overflow-x: hidden; }
+
+/* Sidebar */
+.brand { display: flex; align-items: center; gap: 10px; padding: 0 0.5rem; }
+.brand-icon { width: 32px; height: 32px; border-radius: 8px; background: var(--blue); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: 600; flex-shrink: 0; }
+.brand-name { font-size: 15px; font-weight: 600; }
+.brand-sub { font-size: 11px; color: var(--text-muted); }
+.nav-section { display: flex; flex-direction: column; gap: 2px; }
+.nav-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--text-faint); padding: 0 0.75rem; margin-bottom: 4px; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: var(--radius); font-size: 13px; color: var(--text-muted); cursor: pointer; transition: all .15s; user-select: none; }
+.nav-item:hover { background: var(--bg-surface); color: var(--text); }
+.nav-item.active { background: var(--blue-light); color: var(--blue-text); font-weight: 500; }
+.nav-item svg { width: 16px; height: 16px; flex-shrink: 0; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.conn-badge { margin-top: auto; display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: var(--bg-surface); border-radius: var(--radius); font-size: 12px; color: var(--text-muted); }
+.conn-dot { width: 7px; height: 7px; border-radius: 50%; background: #639922; flex-shrink: 0; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+
+/* Topbar */
+.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.75rem; flex-wrap: wrap; gap: 12px; }
+.page-title { font-size: 20px; font-weight: 600; }
+.page-sub { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+.topbar-actions { display: flex; gap: 8px; align-items: center; }
+.btn { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-family: inherit; padding: 7px 14px; border: 0.5px solid var(--border-strong); border-radius: var(--radius); background: var(--bg-card); color: var(--text); cursor: pointer; transition: all .15s; font-weight: 500; }
+.btn:hover { background: var(--bg-surface); }
+.btn-primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+.btn-primary:hover { background: #0C447C; border-color: #0C447C; }
+.btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Metrics */
+.metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 1.5rem; }
+.metric { background: var(--bg-surface); border-radius: var(--radius-lg); padding: 1.1rem 1.25rem; }
+.metric-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); margin-bottom: 8px; }
+.metric-value { font-size: 26px; font-weight: 600; letter-spacing: -.02em; line-height: 1; }
+.metric-delta { font-size: 12px; margin-top: 6px; color: var(--text-muted); }
+.delta-up { color: var(--green); }
+.delta-down { color: var(--red); }
+
+/* Cards */
+.card { background: var(--bg-card); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1.25rem; }
+.card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.1rem; }
+.card-title { font-size: 14px; font-weight: 600; }
+.card-sub { font-size: 12px; color: var(--text-muted); }
+
+/* Charts row */
+.charts-row { display: grid; grid-template-columns: 3fr 2fr; gap: 1.25rem; margin-bottom: 1.25rem; }
+
+/* Pipeline bars */
+.pipe-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 12px; }
+.pipe-label { width: 88px; color: var(--text-muted); flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pipe-bg { flex: 1; height: 7px; background: var(--bg-surface); border-radius: 4px; overflow: hidden; }
+.pipe-fill { height: 7px; border-radius: 4px; transition: width .6s cubic-bezier(.4,0,.2,1); }
+.pipe-n { width: 22px; text-align: right; color: var(--text-muted); }
+.pipe-v { width: 54px; text-align: right; font-weight: 500; font-size: 12px; }
+
+/* Table */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; color: var(--text-muted); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; padding: 8px 12px; border-bottom: 0.5px solid var(--border); }
+td { padding: 10px 12px; border-bottom: 0.5px solid var(--border); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: var(--bg-surface); }
+
+/* Badges */
+.badge { display: inline-block; font-size: 11px; padding: 3px 8px; border-radius: 4px; font-weight: 500; white-space: nowrap; }
+.b-won { background: var(--green-light); color: var(--green-text); }
+.b-lost { background: var(--red-light); color: var(--red-text); }
+.b-active { background: var(--blue-light); color: var(--blue-text); }
+.b-new { background: var(--amber-light); color: var(--amber-text); }
+.b-neg { background: var(--purple-light); color: var(--purple-text); }
+
+/* Avatars */
+.av { width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; flex-shrink: 0; vertical-align: middle; }
+.av0 { background: #B5D4F4; color: #0C447C; }
+.av1 { background: #9FE1CB; color: #085041; }
+.av2 { background: #CECBF6; color: #3C3489; }
+.av3 { background: #FAC775; color: #633806; }
+.av4 { background: #F5C4B3; color: #712B13; }
+
+/* Form */
+.form-card { background: var(--bg-card); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1.25rem; }
+.form-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field label { font-size: 11px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; }
+.field input, .field select { font-size: 13px; font-family: inherit; padding: 7px 11px; border: 0.5px solid var(--border-strong); border-radius: var(--radius); background: var(--bg-surface); color: var(--text); transition: border-color .15s; }
+.field input:focus, .field select:focus { outline: none; border-color: var(--blue); }
+
+/* Stage select in table */
+.stage-sel { font-size: 12px; font-family: inherit; padding: 4px 8px; border: 0.5px solid var(--border-strong); border-radius: 5px; background: var(--bg-surface); color: var(--text); cursor: pointer; }
+
+/* Banner */
+.banner { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: var(--radius); font-size: 13px; margin-bottom: 1.25rem; }
+.b-err { background: var(--red-light); color: var(--red-text); border: 0.5px solid #F09595; }
+.b-ok { background: var(--green-light); color: var(--green-text); border: 0.5px solid #97C459; }
+
+/* Quota progress */
+.prog-bg { height: 5px; background: var(--bg-surface); border-radius: 3px; margin-top: 5px; overflow: hidden; }
+.prog-fill { height: 5px; border-radius: 3px; background: var(--blue); transition: width .6s cubic-bezier(.4,0,.2,1); }
+
+/* Loading */
+.loading { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 4rem; color: var(--text-muted); font-size: 14px; }
+.spin { width: 20px; height: 20px; border: 2px solid var(--border-strong); border-top-color: var(--blue); border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Empty */
+.empty { text-align: center; padding: 3rem; color: var(--text-muted); font-size: 13px; }
+
+/* Delete btn */
+.del-btn { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 5px; border: 0.5px solid var(--border); background: transparent; color: var(--text-faint); cursor: pointer; font-size: 13px; transition: all .15s; }
+.del-btn:hover { background: var(--red-light); color: var(--red-text); border-color: #F09595; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .shell { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .main { padding: 1rem; }
+  .charts-row { grid-template-columns: 1fr; }
+  .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+}
 </style>
 </head>
 <body>
-<div id="app"></div>
+
+<div class="shell">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon">SO</div>
+      <div>
+        <div class="brand-name">SalesOps</div>
+        <div class="brand-sub">Dashboard</div>
+      </div>
+    </div>
+    <nav class="nav-section">
+      <div class="nav-label">Menu</div>
+      <div class="nav-item active" onclick="setTab('overview')" id="nav-overview">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Overview
+      </div>
+      <div class="nav-item" onclick="setTab('deals')" id="nav-deals">
+        <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
+        Deals
+      </div>
+      <div class="nav-item" onclick="setTab('team')" id="nav-team">
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        Team
+      </div>
+      <div class="nav-item" onclick="setTab('activity')" id="nav-activity">
+        <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Activity
+      </div>
+    </nav>
+    <div class="conn-badge">
+      <span class="conn-dot"></span>
+      <span id="conn-label">Connecting…</span>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main" id="main">
+    <div class="loading"><div class="spin"></div> Loading your data…</div>
+  </main>
+</div>
+
 <script>
-const SB_URL="https://zofkyhbnxglhnwrgmpqj.supabase.co";
-const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpvZmt5aGJueGdsaG53cmdtcHFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5OTE0OTksImV4cCI6MjA5NTU2NzQ5OX0.8-LFv24_yqIR0ZQKMu8hQD5zMNwmLfKwEGjeGcnDW28";
-const STAGES=['Prospecting','Qualification','Proposal','Negotiation','Closed Won','Closed Lost'];
-const SC={'Prospecting':'#378ADD','Qualification':'#EF9F27','Proposal':'#7F77DD','Negotiation':'#D85A30','Closed Won':'#639922','Closed Lost':'#E24B4A'};
-const BC={'Closed Won':'b-won','Closed Lost':'b-lost','Prospecting':'b-new','Qualification':'b-active','Proposal':'b-active','Negotiation':'b-neg'};
-const AVC=['av0','av1','av2','av3','av4'];
-const avc=n=>AVC[((n||'A').charCodeAt(0))%5];
-const avi=n=>(n||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-const fmt=v=>v>=1e6?'$'+(v/1e6).toFixed(1)+'M':v>=1e3?'$'+Math.round(v/1e3)+'K':'$'+Math.round(v||0);
-const fmtDate=s=>s?new Date(s).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit'}):'—';
-let S={tab:'overview',deals:[],reps:[],activities:[],msg:null,loading:true,connected:false};
-let ND={name:'',company:'',value:'',stage:'Prospecting',rep_name:''};
-let chartInst=null;
-async function sb(path,opts={}){
-  const r=await fetch(`${SB_URL}/rest/v1/${path}`,{
-    headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json','Prefer':'return=representation',...(opts.headers||{})},
+const SB_URL = "https://zofkyhbnxglhnwrgmpqj.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpvZmt5aGJueGdsaG53cmdtcHFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5OTE0OTksImV4cCI6MjA5NTU2NzQ5OX0.8-LFv24_yqIR0ZQKMu8hQD5zMNwmLfKwEGjeGcnDW28";
+
+const STAGES = ['Prospecting','Qualification','Proposal','Negotiation','Closed Won','Closed Lost'];
+const SC = {'Prospecting':'#378ADD','Qualification':'#EF9F27','Proposal':'#7F77DD','Negotiation':'#D85A30','Closed Won':'#639922','Closed Lost':'#E24B4A'};
+const BC = {'Closed Won':'b-won','Closed Lost':'b-lost','Prospecting':'b-new','Qualification':'b-active','Proposal':'b-active','Negotiation':'b-neg'};
+const AVC = ['av0','av1','av2','av3','av4'];
+const avc = n => AVC[((n||'A').charCodeAt(0)) % 5];
+const avi = n => (n||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+const fmt = v => v>=1e6?'$'+(v/1e6).toFixed(1)+'M':v>=1e3?'$'+Math.round(v/1e3)+'K':'$'+Math.round(v||0);
+const fmtDate = s => s ? new Date(s).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit'}) : '—';
+const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+
+let S = { tab:'overview', deals:[], reps:[], activities:[], msg:null, loading:true };
+let ND = { name:'', company:'', value:'', stage:'Prospecting', rep_name:'' };
+let chartInst = null;
+
+async function sb(path, opts={}) {
+  const r = await fetch(`${SB_URL}/rest/v1/${path}`, {
+    headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation', ...(opts.headers||{}) },
     ...opts
   });
-  if(!r.ok){const t=await r.text();throw new Error(JSON.parse(t)?.message||t||r.statusText)}
-  if(r.status===204)return null;
+  if (!r.ok) { const t = await r.text(); let msg; try { msg = JSON.parse(t).message; } catch(e) { msg = t; } throw new Error(msg||r.statusText); }
+  if (r.status === 204) return null;
   return r.json();
 }
-async function loadAll(){
-  const[d,r,a]=await Promise.all([
+
+async function loadAll() {
+  const [d,r,a] = await Promise.all([
     sb('deals?select=*&order=created_at.desc'),
     sb('reps?select=*&order=name.asc'),
     sb('activities?select=*&order=created_at.desc&limit=60'),
   ]);
-  S.deals=d||[];S.reps=r||[];S.activities=a||[];
+  S.deals = d||[]; S.reps = r||[]; S.activities = a||[];
 }
-async function boot(){
-  S.loading=true;render();
-  try{await loadAll();S.connected=true;S.loading=false;render();}
-  catch(e){S.loading=false;S.connected=false;S.msg={type:'err',text:'Could not load data: '+e.message};render();}
+
+async function boot() {
+  try {
+    await loadAll();
+    S.loading = false;
+    document.getElementById('conn-label').textContent = `Live · ${S.deals.length} deals`;
+    render();
+  } catch(e) {
+    S.loading = false;
+    S.msg = { type:'err', text:'Could not connect: ' + e.message };
+    document.getElementById('conn-label').textContent = 'Connection error';
+    document.querySelector('.conn-dot').style.background = '#E24B4A';
+    render();
+  }
 }
-async function addDeal(){
-  if(!ND.name||!ND.value){S.msg={type:'err',text:'Deal name and value are required.'};render();return;}
-  try{
-    const d=await sb('deals',{method:'POST',body:JSON.stringify({name:ND.name,company:ND.company,stage:ND.stage,value:parseFloat(ND.value),rep_name:ND.rep_name,close_date:new Date(Date.now()+30*864e5).toISOString().split('T')[0],created_at:new Date().toISOString()})});
-    S.deals=[d[0],...S.deals];
-    try{await sb('activities',{method:'POST',body:JSON.stringify({deal_id:d[0].id,type:'Deal Created',note:`${ND.name} added to ${ND.stage}`,created_at:new Date().toISOString()})});}catch(e){}
-    S.activities=[{type:'Deal Created',note:`${ND.name} added to ${ND.stage}`,created_at:new Date().toISOString()},...S.activities];
-    ND={name:'',company:'',value:'',stage:'Prospecting',rep_name:''};
-    S.msg={type:'ok',text:`"${d[0].name}" saved to Supabase ✓`};render();
-  }catch(e){S.msg={type:'err',text:e.message};render();}
+
+async function addDeal() {
+  if (!ND.name || !ND.value) { S.msg = {type:'err',text:'Deal name and value are required.'}; render(); return; }
+  try {
+    const d = await sb('deals', { method:'POST', body: JSON.stringify({
+      name: ND.name, company: ND.company, stage: ND.stage,
+      value: parseFloat(ND.value), rep_name: ND.rep_name,
+      close_date: new Date(Date.now()+30*864e5).toISOString().split('T')[0],
+      created_at: new Date().toISOString()
+    })});
+    S.deals = [d[0], ...S.deals];
+    try { await sb('activities', { method:'POST', body: JSON.stringify({ deal_id:d[0].id, type:'Deal Created', note:`${ND.name} added to ${ND.stage}`, created_at:new Date().toISOString() })}); } catch(e){}
+    S.activities = [{type:'Deal Created', note:`${ND.name} added to ${ND.stage}`, created_at:new Date().toISOString()}, ...S.activities];
+    ND = { name:'', company:'', value:'', stage:'Prospecting', rep_name:'' };
+    S.msg = { type:'ok', text:`"${d[0].name}" saved to Supabase ✓` };
+    render();
+  } catch(e) { S.msg = {type:'err',text:e.message}; render(); }
 }
-async function patchStage(id,stage){
-  try{
-    await sb(`deals?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({stage})});
-    S.deals=S.deals.map(d=>d.id===id?{...d,stage}:d);
-    try{await sb('activities',{method:'POST',body:JSON.stringify({deal_id:id,type:'Stage Change',note:`Stage → ${stage}`,created_at:new Date().toISOString()})});}catch(e){}
-    S.activities=[{type:'Stage Change',note:`Stage → ${stage}`,created_at:new Date().toISOString()},...S.activities];
-    S.msg={type:'ok',text:`Stage updated to "${stage}" ✓`};render();
-  }catch(e){S.msg={type:'err',text:e.message};render();}
+
+async function patchStage(id, stage) {
+  try {
+    await sb(`deals?id=eq.${id}`, { method:'PATCH', body: JSON.stringify({stage}) });
+    S.deals = S.deals.map(d => d.id===id ? {...d, stage} : d);
+    try { await sb('activities', { method:'POST', body: JSON.stringify({ deal_id:id, type:'Stage Change', note:`Stage → ${stage}`, created_at:new Date().toISOString() })}); } catch(e){}
+    S.activities = [{type:'Stage Change', note:`Stage → ${stage}`, created_at:new Date().toISOString()}, ...S.activities];
+    S.msg = { type:'ok', text:`Stage updated to "${stage}" ✓` };
+    render();
+  } catch(e) { S.msg = {type:'err',text:e.message}; render(); }
 }
-async function deleteDeal(id,name){
-  if(!confirm(`Delete "${name}"?`))return;
-  try{
-    await sb(`deals?id=eq.${id}`,{method:'DELETE',headers:{'Prefer':''}});
-    S.deals=S.deals.filter(d=>d.id!==id);
-    S.msg={type:'ok',text:`"${name}" deleted.`};render();
-  }catch(e){S.msg={type:'err',text:e.message};render();}
+
+async function deleteDeal(id, name) {
+  if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+  try {
+    await sb(`deals?id=eq.${id}`, { method:'DELETE', headers:{'Prefer':''} });
+    S.deals = S.deals.filter(d => d.id !== id);
+    S.msg = { type:'ok', text:`"${name}" deleted.` };
+    render();
+  } catch(e) { S.msg = {type:'err',text:e.message}; render(); }
 }
-async function refresh(){S.msg=null;try{await loadAll();S.msg={type:'ok',text:'Refreshed ✓'};}catch(e){S.msg={type:'err',text:e.message};}render();}
-function mets(){
-  const won=S.deals.filter(d=>d.stage==='Closed Won');
-  const active=S.deals.filter(d=>!['Closed Won','Closed Lost'].includes(d.stage));
-  const closed=S.deals.filter(d=>['Closed Won','Closed Lost'].includes(d.stage));
-  const rev=won.reduce((s,d)=>s+(d.value||0),0);
-  const pipe=active.reduce((s,d)=>s+(d.value||0),0);
-  const wr=closed.length?Math.round(won.length/closed.length*100):0;
-  const avg=won.length?Math.round(rev/won.length):0;
-  return{rev,pipe,wr,avg,wonN:won.length,activeN:active.length,total:S.deals.length};
+
+async function refresh() {
+  S.msg = null;
+  try { await loadAll(); S.msg = {type:'ok',text:'Data refreshed ✓'}; document.getElementById('conn-label').textContent = `Live · ${S.deals.length} deals`; }
+  catch(e) { S.msg = {type:'err',text:e.message}; }
+  render();
 }
-function pipeStages(){
-  const m={};STAGES.forEach(s=>{m[s]={count:0,value:0}});
-  S.deals.forEach(d=>{if(m[d.stage]){m[d.stage].count++;m[d.stage].value+=(d.value||0)}});
+
+function mets() {
+  const won = S.deals.filter(d=>d.stage==='Closed Won');
+  const active = S.deals.filter(d=>!['Closed Won','Closed Lost'].includes(d.stage));
+  const closed = S.deals.filter(d=>['Closed Won','Closed Lost'].includes(d.stage));
+  const rev = won.reduce((s,d)=>s+(d.value||0),0);
+  const pipe = active.reduce((s,d)=>s+(d.value||0),0);
+  const wr = closed.length ? Math.round(won.length/closed.length*100) : 0;
+  const avg = won.length ? Math.round(rev/won.length) : 0;
+  return { rev, pipe, wr, avg, wonN:won.length, activeN:active.length, total:S.deals.length };
+}
+
+function pipeStages() {
+  const m = {}; STAGES.forEach(s=>{m[s]={count:0,value:0}});
+  S.deals.forEach(d=>{ if(m[d.stage]){m[d.stage].count++;m[d.stage].value+=(d.value||0)} });
   return m;
 }
-function repPerf(){
-  const m={};
+
+function repPerf() {
+  const m = {};
   S.deals.forEach(d=>{
-    if(!d.rep_name)return;
-    if(!m[d.rep_name])m[d.rep_name]={won:0,total:0,rev:0};
+    if(!d.rep_name) return;
+    if(!m[d.rep_name]) m[d.rep_name]={won:0,total:0,rev:0};
     m[d.rep_name].total++;
     if(d.stage==='Closed Won'){m[d.rep_name].won++;m[d.rep_name].rev+=(d.value||0)}
   });
   return Object.entries(m).sort((a,b)=>b[1].rev-a[1].rev);
 }
-function render(){
-  const app=document.getElementById('app');
-  if(S.loading){app.innerHTML=`<div class="loading"><div class="spin"></div> Connecting to Supabase…</div>`;return;}
-  const m=mets(),stages=pipeStages(),perf=repPerf();
-  app.innerHTML=`
-    <div class="topbar">
-      <div class="topbar-left">
-        <div class="logo">SO</div>
-        <h1>SalesOps</h1>
-        <div class="conn"><span class="dot ${S.connected?'':'err'}"></span>Live · ${S.deals.length} deals</div>
-      </div>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-sm" onclick="refresh()">↻ Refresh</button>
-      </div>
-    </div>
-    ${S.msg?`<div class="banner ${S.msg.type==='err'?'b-err':'b-ok'}">${S.msg.text}</div>`:''}
-    <div class="tabs">
-      ${['overview','deals','team','activity'].map(t=>`<div class="tab${S.tab===t?' active':''}" onclick="setTab('${t}')">${t[0].toUpperCase()+t.slice(1)}</div>`).join('')}
-    </div>
-    ${S.tab==='overview'?renderOverview(m,stages,perf):''}
-    ${S.tab==='deals'?renderDeals():''}
-    ${S.tab==='team'?renderTeam(perf):''}
-    ${S.tab==='activity'?renderActivity():''}
-  `;
-  if(S.tab==='overview')setTimeout(()=>drawChart(stages),60);
+
+function drawChart(stages) {
+  const c = document.getElementById('stageChart');
+  if (!c) return;
+  if (chartInst) { chartInst.destroy(); chartInst = null; }
+  const labels = STAGES.filter(s=>stages[s].count>0);
+  const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  chartInst = new Chart(c, {
+    type: 'doughnut',
+    data: { labels, datasets: [{ data: labels.map(s=>stages[s].count), backgroundColor: labels.map(s=>SC[s]), borderWidth: 2, borderColor: isDark?'#232320':'#fff' }] },
+    options: { responsive:true, maintainAspectRatio:false, plugins: { legend: { position:'bottom', labels:{ font:{size:11,family:'DM Sans'}, boxWidth:10, padding:10, color: isDark?'#888880':'#888880' } }, tooltip:{ callbacks:{ label: ctx=>`${ctx.label}: ${ctx.raw} deal${ctx.raw!==1?'s':''}` } } } }
+  });
 }
-function renderOverview(m,stages,perf){
-  return`
+
+function render() {
+  const main = document.getElementById('main');
+  if (S.loading) { main.innerHTML = `<div class="loading"><div class="spin"></div> Loading your data…</div>`; return; }
+
+  // Update nav
+  ['overview','deals','team','activity'].forEach(t => {
+    const el = document.getElementById(`nav-${t}`);
+    if (el) el.className = 'nav-item' + (S.tab===t?' active':'');
+  });
+
+  const m = mets(), stages = pipeStages(), perf = repPerf();
+  const banner = S.msg ? `<div class="banner ${S.msg.type==='err'?'b-err':'b-ok'}">${esc(S.msg.text)}</div>` : '';
+
+  let content = '';
+  if (S.tab === 'overview') content = renderOverview(m, stages, perf);
+  else if (S.tab === 'deals') content = renderDeals();
+  else if (S.tab === 'team') content = renderTeam(perf);
+  else if (S.tab === 'activity') content = renderActivity();
+
+  const titles = { overview:'Overview', deals:'Deals', team:'Team', activity:'Activity Log' };
+
+  main.innerHTML = `
+    <div class="topbar">
+      <div>
+        <div class="page-title">${titles[S.tab]}</div>
+        <div class="page-sub">Supabase · zofkyhbnxglhnwrgmpqj</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn" onclick="refresh()">
+          <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+          Refresh
+        </button>
+      </div>
+    </div>
+    ${banner}
+    ${content}
+  `;
+
+  if (S.tab === 'overview') setTimeout(() => drawChart(stages), 60);
+}
+
+function renderOverview(m, stages, perf) {
+  return `
     <div class="metrics-grid">
-      <div class="metric"><div class="metric-label">Revenue closed</div><div class="metric-value">${fmt(m.rev)}</div><div class="metric-sub up">↑ ${m.wonN} deals won</div></div>
-      <div class="metric"><div class="metric-label">Pipeline value</div><div class="metric-value">${fmt(m.pipe)}</div><div class="metric-sub">${m.activeN} active</div></div>
-      <div class="metric"><div class="metric-label">Win rate</div><div class="metric-value">${m.wr}%</div><div class="metric-sub">${m.total} total deals</div></div>
-      <div class="metric"><div class="metric-label">Avg deal size</div><div class="metric-value">${fmt(m.avg)}</div><div class="metric-sub">${m.wonN} closed won</div></div>
+      <div class="metric"><div class="metric-label">Revenue closed</div><div class="metric-value">${fmt(m.rev)}</div><div class="metric-delta delta-up">↑ ${m.wonN} deals won</div></div>
+      <div class="metric"><div class="metric-label">Pipeline value</div><div class="metric-value">${fmt(m.pipe)}</div><div class="metric-delta">${m.activeN} active deals</div></div>
+      <div class="metric"><div class="metric-label">Win rate</div><div class="metric-value">${m.wr}%</div><div class="metric-delta">${m.total} total deals</div></div>
+      <div class="metric"><div class="metric-label">Avg deal size</div><div class="metric-value">${fmt(m.avg)}</div><div class="metric-delta">${m.wonN} closed won</div></div>
     </div>
     <div class="charts-row">
       <div class="card">
         <div class="card-header"><span class="card-title">Pipeline by stage</span></div>
-        ${STAGES.map(s=>{const st=stages[s];const max=Math.max(...Object.values(stages).map(x=>x.value),1);return`<div class="pipe-row"><span class="pipe-label">${s}</span><div class="pipe-bg"><div class="pipe-fill" style="width:${Math.round(st.value/max*100)}%;background:${SC[s]}"></div></div><span class="pipe-n">${st.count}</span><span class="pipe-v">${fmt(st.value)}</span></div>`;}).join('')}
+        ${STAGES.map(s => {
+          const st=stages[s], max=Math.max(...Object.values(stages).map(x=>x.value),1);
+          return `<div class="pipe-row">
+            <span class="pipe-label">${s}</span>
+            <div class="pipe-bg"><div class="pipe-fill" style="width:${Math.round(st.value/max*100)}%;background:${SC[s]}"></div></div>
+            <span class="pipe-n">${st.count}</span>
+            <span class="pipe-v">${fmt(st.value)}</span>
+          </div>`;
+        }).join('')}
       </div>
       <div class="card">
         <div class="card-header"><span class="card-title">Stage breakdown</span></div>
-        <div style="position:relative;width:100%;height:190px"><canvas id="stageChart"></canvas></div>
+        <div style="position:relative;width:100%;height:200px">
+          <canvas id="stageChart" role="img" aria-label="Donut chart of deals by stage">Deal distribution by stage.</canvas>
+        </div>
       </div>
     </div>
     <div class="card">
       <div class="card-header"><span class="card-title">Recent deals</span><span class="card-sub">${S.deals.length} total</span></div>
       <div class="table-wrap"><table>
-        <thead><tr><th>Deal</th><th>Stage</th><th>Value</th><th>Rep</th><th>Close</th></tr></thead>
-        <tbody>${S.deals.slice(0,6).map(d=>`<tr><td style="font-weight:500">${d.name}${d.company?`<br><span style="font-size:11px;color:#888;font-weight:400">${d.company}</span>`:''}</td><td><span class="badge ${BC[d.stage]||'b-active'}">${d.stage}</span></td><td>${fmt(d.value||0)}</td><td><span class="av ${avc(d.rep_name||'A')}" style="margin-right:6px">${avi(d.rep_name||'?')}</span>${d.rep_name||'—'}</td><td style="color:#888;font-size:12px">${fmtDate(d.close_date)}</td></tr>`).join('')}</tbody>
+        <thead><tr><th>Deal</th><th>Stage</th><th>Value</th><th>Rep</th><th>Close date</th></tr></thead>
+        <tbody>${S.deals.slice(0,7).map(d=>`<tr>
+          <td><span style="font-weight:500">${esc(d.name)}</span>${d.company?`<br><span style="font-size:11px;color:var(--text-muted)">${esc(d.company)}</span>`:''}</td>
+          <td><span class="badge ${BC[d.stage]||'b-active'}">${d.stage}</span></td>
+          <td>${fmt(d.value||0)}</td>
+          <td><span class="av ${avc(d.rep_name||'A')}" style="margin-right:6px">${avi(d.rep_name||'?')}</span>${esc(d.rep_name||'—')}</td>
+          <td style="color:var(--text-muted);font-size:12px">${fmtDate(d.close_date)}</td>
+        </tr>`).join('')}</tbody>
       </table></div>
     </div>`;
 }
-function renderDeals(){
-  return`
-    <div class="form-row">
-      <div class="field"><label>Deal name *</label><input type="text" placeholder="e.g. Acme Q3 Expansion" value="${ND.name}" oninput="ND.name=this.value" style="min-width:160px"></div>
-      <div class="field"><label>Company</label><input type="text" placeholder="Company" value="${ND.company}" oninput="ND.company=this.value" style="min-width:110px"></div>
-      <div class="field"><label>Value ($) *</label><input type="number" placeholder="50000" value="${ND.value}" oninput="ND.value=this.value" style="width:90px"></div>
-      <div class="field"><label>Stage</label><select onchange="ND.stage=this.value">${STAGES.map(s=>`<option value="${s}"${ND.stage===s?' selected':''}>${s}</option>`).join('')}</select></div>
-      <div class="field"><label>Rep</label><input type="text" placeholder="Rep name" value="${ND.rep_name}" oninput="ND.rep_name=this.value" list="rl" style="min-width:110px"><datalist id="rl">${S.reps.map(r=>`<option value="${r.name}">`).join('')}</datalist></div>
-      <div class="field"><label>&nbsp;</label><button class="btn btn-primary" onclick="addDeal()">+ Add deal</button></div>
+
+function renderDeals() {
+  const repOpts = S.reps.map(r=>`<option value="${esc(r.name)}">`).join('');
+  return `
+    <div class="form-card">
+      <div class="card-header"><span class="card-title">Add new deal</span></div>
+      <div class="form-row">
+        <div class="field"><label>Deal name *</label><input type="text" placeholder="e.g. Acme Q3 Expansion" id="f-name" value="${esc(ND.name)}" oninput="ND.name=this.value" style="min-width:160px"></div>
+        <div class="field"><label>Company</label><input type="text" placeholder="Company" id="f-co" value="${esc(ND.company)}" oninput="ND.company=this.value" style="min-width:120px"></div>
+        <div class="field"><label>Value ($) *</label><input type="number" placeholder="50000" id="f-val" value="${esc(ND.value)}" oninput="ND.value=this.value" style="width:100px"></div>
+        <div class="field"><label>Stage</label><select id="f-stage" onchange="ND.stage=this.value">${STAGES.map(s=>`<option value="${s}"${ND.stage===s?' selected':''}>${s}</option>`).join('')}</select></div>
+        <div class="field"><label>Rep</label><input type="text" placeholder="Rep name" id="f-rep" value="${esc(ND.rep_name)}" oninput="ND.rep_name=this.value" list="rl" style="min-width:120px"><datalist id="rl">${repOpts}</datalist></div>
+        <div class="field"><label>&nbsp;</label><button class="btn btn-primary" onclick="addDeal()">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add deal
+        </button></div>
+      </div>
     </div>
     <div class="card">
-      ${!S.deals.length?`<div class="empty">No deals yet.</div>`:`
+      ${!S.deals.length ? `<div class="empty">No deals yet. Add one above.</div>` : `
       <div class="table-wrap"><table>
-        <thead><tr><th>Deal</th><th>Company</th><th>Value</th><th>Stage</th><th>Rep</th><th>Close</th><th></th></tr></thead>
-        <tbody>${S.deals.map(d=>`<tr><td style="font-weight:500">${d.name}</td><td style="color:#888">${d.company||'—'}</td><td>${fmt(d.value||0)}</td><td><select class="stage-select" onchange="patchStage('${d.id}',this.value)">${STAGES.map(s=>`<option value="${s}"${d.stage===s?' selected':''}>${s}</option>`).join('')}</select></td><td><span class="av ${avc(d.rep_name||'A')}" style="margin-right:6px">${avi(d.rep_name||'?')}</span>${d.rep_name||'Unassigned'}</td><td style="color:#888;font-size:12px">${fmtDate(d.close_date)}</td><td><button class="btn btn-sm" onclick="deleteDeal('${d.id}','${d.name.replace(/'/g,"\\'")}')" style="color:#A32D2D;border-color:rgba(163,45,45,.25);padding:3px 8px">✕</button></td></tr>`).join('')}</tbody>
+        <thead><tr><th>Deal</th><th>Company</th><th>Value</th><th>Stage</th><th>Rep</th><th>Close date</th><th></th></tr></thead>
+        <tbody>${S.deals.map(d=>`<tr>
+          <td style="font-weight:500">${esc(d.name)}</td>
+          <td style="color:var(--text-muted)">${esc(d.company||'—')}</td>
+          <td>${fmt(d.value||0)}</td>
+          <td><select class="stage-sel" onchange="patchStage('${d.id}',this.value)">${STAGES.map(s=>`<option value="${s}"${d.stage===s?' selected':''}>${s}</option>`).join('')}</select></td>
+          <td><span class="av ${avc(d.rep_name||'A')}" style="margin-right:6px">${avi(d.rep_name||'?')}</span>${esc(d.rep_name||'Unassigned')}</td>
+          <td style="color:var(--text-muted);font-size:12px">${fmtDate(d.close_date)}</td>
+          <td><button class="del-btn" onclick="deleteDeal('${d.id}','${esc(d.name).replace(/'/g,"\\'")}')">✕</button></td>
+        </tr>`).join('')}</tbody>
       </table></div>`}
     </div>`;
 }
-function renderTeam(perf){
-  return`<div class="card">
-    ${!perf.length?`<div class="empty">No rep data yet.</div>`:`
+
+function renderTeam(perf) {
+  return `<div class="card">
+    ${!perf.length ? `<div class="empty">No rep data yet. Add deals with rep names.</div>` : `
     <div class="table-wrap"><table>
-      <thead><tr><th>Rep</th><th>Region</th><th>Won</th><th>Revenue</th><th>Win rate</th><th>Quota progress</th></tr></thead>
+      <thead><tr><th>Rep</th><th>Region</th><th>Deals won</th><th>Revenue</th><th>Win rate</th><th>Quota progress</th></tr></thead>
       <tbody>${perf.map(([name,p])=>{
-        const rep=S.reps.find(r=>r.name===name);const quota=rep?.quota||120000;
-        const pct=Math.min(Math.round(p.rev/quota*100),100);const wr=p.total?Math.round(p.won/p.total*100):0;
-        return`<tr><td><span class="av ${avc(name)}" style="margin-right:8px">${avi(name)}</span><span style="font-weight:500">${name}</span></td><td style="color:#888">${rep?.region||'—'}</td><td>${p.won}</td><td>${fmt(p.rev)}</td><td><span class="${wr>=50?'up':''}">${wr}%</span></td><td style="min-width:130px"><div style="display:flex;justify-content:space-between;font-size:11px;color:#888;margin-bottom:3px"><span>${fmt(p.rev)}</span><span>${pct}% of ${fmt(quota)}</span></div><div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${pct>=100?'#639922':'#185FA5'}"></div></div></td></tr>`;
+        const rep = S.reps.find(r=>r.name===name);
+        const quota = rep?.quota||120000;
+        const pct = Math.min(Math.round(p.rev/quota*100),100);
+        const wr = p.total ? Math.round(p.won/p.total*100) : 0;
+        return `<tr>
+          <td><span class="av ${avc(name)}" style="margin-right:8px">${avi(name)}</span><span style="font-weight:500">${esc(name)}</span></td>
+          <td style="color:var(--text-muted)">${rep?.region||'—'}</td>
+          <td>${p.won}</td>
+          <td>${fmt(p.rev)}</td>
+          <td><span style="color:${wr>=50?'var(--green)':'inherit'}">${wr}%</span></td>
+          <td style="min-width:140px">
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-bottom:3px"><span>${fmt(p.rev)}</span><span>${pct}% of ${fmt(quota)}</span></div>
+            <div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${pct>=100?'#639922':'var(--blue)'}"></div></div>
+          </td>
+        </tr>`;
       }).join('')}</tbody>
     </table></div>`}
   </div>`;
 }
-function renderActivity(){
-  return`<div class="card">
+
+function renderActivity() {
+  return `<div class="card">
     <div class="card-header"><span class="card-title">Activity log</span><span class="card-sub">${S.activities.length} events</span></div>
-    ${!S.activities.length?`<div class="empty">No activity yet.</div>`:`
+    ${!S.activities.length ? `<div class="empty">No activity yet.</div>` : `
     <div class="table-wrap"><table>
       <thead><tr><th>Date</th><th>Type</th><th>Note</th></tr></thead>
-      <tbody>${S.activities.slice(0,40).map(a=>`<tr><td style="color:#888;white-space:nowrap;font-size:12px">${fmtDate(a.created_at)}</td><td><span class="badge b-active">${a.type}</span></td><td>${a.note}</td></tr>`).join('')}</tbody>
+      <tbody>${S.activities.slice(0,40).map(a=>`<tr>
+        <td style="color:var(--text-muted);white-space:nowrap;font-size:12px">${fmtDate(a.created_at)}</td>
+        <td><span class="badge b-active">${esc(a.type)}</span></td>
+        <td>${esc(a.note)}</td>
+      </tr>`).join('')}</tbody>
     </table></div>`}
   </div>`;
 }
-function drawChart(stages){
-  const c=document.getElementById('stageChart');if(!c)return;
-  if(chartInst){chartInst.destroy();chartInst=null;}
-  const labels=STAGES.filter(s=>stages[s].count>0);
-  chartInst=new Chart(c,{type:'doughnut',data:{labels,datasets:[{data:labels.map(s=>stages[s].count),backgroundColor:labels.map(s=>SC[s]),borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:10,padding:10}}}}});
-}
-function setTab(t){S.tab=t;S.msg=null;render();}
+
+function setTab(t) { S.tab = t; S.msg = null; render(); }
+
 boot();
 </script>
 </body>
